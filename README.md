@@ -18,6 +18,19 @@
 - Frontend: React + TypeScript + Vite + Tailwind CSS + React Query + Recharts
 - Backend: Tauri 2 + Rust + Axum + Reqwest + SQLx (SQLite)
 
+## 📥 下载安装
+
+前往 [GitHub Releases](https://github.com/pluto037/copilot-router/releases/latest) 下载对应平台的安装包：
+
+| 平台 | 文件 | 说明 |
+|------|------|------|
+| macOS (Apple Silicon) | `*.aarch64.dmg` | M1/M2/M3 芯片 Mac |
+| macOS (Intel) | `*.x64.dmg` | Intel 芯片 Mac |
+| Linux | `*.AppImage` / `*.deb` | Linux 发行版 |
+| Windows | `*.msi` / `*.exe` | Windows 10/11 |
+
+[![Release](https://img.shields.io/github/v/release/pluto037/copilot-router?style=flat-square)](https://github.com/pluto037/copilot-router/releases/latest)
+
 ## 🚀 快速开始
 
 ### 1) 环境要求
@@ -94,12 +107,23 @@ src/            # React 前端
 src-tauri/      # Rust 后端与 Tauri 配置
 ```
 
-## 📦 开源发布建议
+## 📦 发布流程
+
+项目已配置 GitHub Actions 自动化发布流水线（`.github/workflows/release.yml`），支持 macOS、Linux、Windows 三平台构建。
+
+### 发布新版本
 
 1. 🔎 发布前检查仓库中是否包含真实 Token/密钥。
-2. ✅ 执行 `npm run build` + `cargo check`。
-3. 🏷️ 使用 GitHub Release 发布多平台产物。
-4. 📝 在 Release Notes 说明支持客户端与已知限制。
+2. ✅ 本地执行 `npm run build` + `cargo check` 验证构建。
+3. 🏷️ 推送版本标签触发自动构建与发布：
+   ```bash
+   git tag v1.0.0
+   git push origin v1.0.0
+   ```
+4. GitHub Actions 将自动在 Windows / macOS / Linux 上构建，并创建 GitHub Release。
+5. 📝 在 Release Notes 说明支持客户端与已知限制。
+
+也可在 GitHub Actions 页面手动触发 `Release` 工作流并指定版本号。
 
 ## 🗺️ Roadmap
 
