@@ -1,0 +1,100 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag (e.g. v1.0.0)'
+        required: true
+        default: 'v0.1.0'
+
+jobs:
+  build-tauri:
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: 'macos-latest'
+            args: '--target aarch64-apple-darwin'
+            name: 'macOS (Apple Silicon)'
+          - platform: 'macos-latest'
+            args: '--target x86_64-apple-darwin'
+            name: 'macOS (Intel)'
+          - platform: 'ubuntu-22.04'
+            args: ''
+            name: 'Linux'
+          - platform: 'windows-latest'
+            args: ''
+            name: 'Windows'
+
+    runs-on: ${{ matrix.platform }}
+    name: Build ${{ matrix.name }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: './src-tauri -> target'
+
+      - name: Install Linux system dependencies
+        if: matrix.platform == 'ubuntu-22.04'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev \
+            libappindicator3-dev \
+            librsvg2-dev \
+            patchelf \
+            libssl-dev \
+            libsqlite3-dev
+
+      - name: Install frontend dependencies
+        run: npm install
+
+      - name: Build Tauri app
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag || github.ref_name }}
+          releaseName: "Copilot Router ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag || github.ref_name }}"
+          releaseBody: |
+            ## Copilot Router ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag || github.ref_name }}
+
+            ### 下载说明
+
+            | 平台 | 文件 | 说明 |
+            |------|------|------|
+            | macOS (Apple Silicon) | `*.aarch64.dmg` | M1/M2/M3 芯片 Mac |
+            | macOS (Intel) | `*.x64.dmg` | Intel 芯片 Mac |
+            | Linux | `*.AppImage` / `*.deb` | Linux 发行版 |
+            | Windows | `*.msi` / `*.exe` | Windows 10/11 |
+
+            ### 使用方法
+
+            1. 下载对应平台的安装包
+            2. 安装并启动应用
+            3. 通过 GitHub Device Flow 登录授权
+            4. 将客户端（Claude Code / Codex 等）的 Base URL 配置为 `http://127.0.0.1:3100/v1`，API Key 填写 `copilot-router`
+          releaseDraft: false
+          prerelease: false
+          args: ${{ matrix.args }}
