@@ -1,12 +1,14 @@
 {
   "name": "copilot-router",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
+    "release:prepare": "node scripts/release.mjs",
+    "release:push": "node scripts/release.mjs --push",
     "tauri": "tauri",
     "tauri:dev": "tauri dev",
     "tauri:build": "tauri build"
