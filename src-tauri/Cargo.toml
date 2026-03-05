@@ -1,6 +1,6 @@
 [package]
 name = "copilot-router"
-version = "1.0.1"
+version = "1.0.2"
 description = "GitHub Copilot to OpenAI/Anthropic API Router"
 authors = []
 edition = "2021"
