@@ -111,6 +111,24 @@ src-tauri/      # Rust 后端与 Tauri 配置
 
 项目已配置 GitHub Actions 自动化发布流水线（`.github/workflows/release.yml`），支持 macOS、Linux、Windows 三平台构建。
 
+### ⚡ 一键发版（推荐）
+
+```bash
+# 1) 本地准备发布（自动同步版本号 + build/check + commit + tag）
+npm run release:prepare -- v1.0.0
+
+# 2) 推送代码与标签，触发 GitHub Release
+git push && git push origin v1.0.0
+```
+
+也可以直接一步到位：
+
+```bash
+npm run release:prepare -- v1.0.0 --push
+```
+
+> 脚本会自动更新这 3 个版本号：`package.json`、`src-tauri/tauri.conf.json`、`src-tauri/Cargo.toml`
+
 ### 发布新版本
 
 1. 🔎 发布前检查仓库中是否包含真实 Token/密钥。
@@ -124,6 +142,18 @@ src-tauri/      # Rust 后端与 Tauri 配置
 5. 📝 在 Release Notes 说明支持客户端与已知限制。
 
 也可在 GitHub Actions 页面手动触发 `Release` 工作流并指定版本号。
+
+### 🧯 如果 Release 里只有 Source code
+
+这通常表示构建任务失败或资产上传阶段未成功。
+
+可按以下顺序处理：
+
+1. 到 GitHub Actions 查看 `Release` 工作流日志，确认失败平台。
+2. 在仓库 Settings → Actions → General，确认 **Workflow permissions** 为 **Read and write**。
+3. 修复后重新运行该工作流（或重新推送新 tag，例如 `v1.0.1`）。
+
+> 建议优先发布新 patch 版本（如 `v1.0.1`），避免重复使用同一 tag 带来的缓存与资产覆盖问题。
 
 ## 🗺️ Roadmap
 

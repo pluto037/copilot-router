@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
+import { open } from "@tauri-apps/plugin-shell";
 import {
   AreaChart,
   Area,
@@ -24,9 +25,11 @@ import {
   RefreshCw,
   Moon,
   Sparkles,
+  Github,
 } from "lucide-react";
 
 const PIE_COLORS = ["#3b82f6", "#10b981", "#f59e0b", "#6366f1", "#ef4444"];
+type AuthHintType = "info" | "success" | "error";
 
 export default function Dashboard() {
   const queryClient = useQueryClient();
@@ -34,6 +37,8 @@ export default function Dashboard() {
     if (typeof document === "undefined") return "default";
     return document.documentElement.dataset.theme === "midnight" ? "midnight" : "default";
   });
+  const [authHint, setAuthHint] = useState("");
+  const [authHintType, setAuthHintType] = useState<AuthHintType>("info");
 
   const { data: stats = [] } = useQuery({
     queryKey: ["usageStats", 14],
@@ -93,6 +98,31 @@ export default function Dashboard() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["claudeTakeoverStatus"] });
       queryClient.invalidateQueries({ queryKey: ["config"] });
+    },
+  });
+
+  const githubAuthMutation = useMutation({
+    mutationFn: async () => {
+      const info = await tauriApi.requestGithubDeviceCode();
+      setAuthHintType("info");
+      setAuthHint(`验证码 ${info.user_code} 已复制，等待浏览器授权...`);
+      await tauriApi.copyToClipboard(info.user_code);
+      await open(info.verification_uri).catch(() => {});
+      return tauriApi.waitGithubDeviceToken(info.device_code);
+    },
+    onSuccess: () => {
+      setAuthHintType("success");
+      setAuthHint("GitHub 认证成功");
+      queryClient.invalidateQueries({ queryKey: ["tokenStatus"] });
+      queryClient.invalidateQueries({ queryKey: ["config"] });
+      queryClient.invalidateQueries({ queryKey: ["proxyStatus"] });
+      queryClient.invalidateQueries({ queryKey: ["claudeTakeoverStatus"] });
+      setTimeout(() => setAuthHint(""), 3000);
+    },
+    onError: (error) => {
+      setAuthHintType("error");
+      setAuthHint(`认证失败: ${String(error)}`);
+      setTimeout(() => setAuthHint(""), 5000);
     },
   });
 
@@ -168,6 +198,21 @@ export default function Dashboard() {
 
   return (
     <div className="h-full overflow-y-auto p-4">
+      {authHint && (
+        <div className="pointer-events-none fixed right-4 top-4 z-50">
+          <div
+            className={cn(
+              "max-w-sm rounded-md border px-3 py-2 text-xs shadow-md",
+              authHintType === "success" && "border-green-500/30 bg-green-500/10 text-green-500",
+              authHintType === "error" && "border-red-500/30 bg-red-500/10 text-red-500",
+              authHintType === "info" && "border-border bg-card text-foreground"
+            )}
+          >
+            {authHint}
+          </div>
+        </div>
+      )}
+
       {/* Stat cards */}
       <div className="mb-4 rounded-xl border border-border bg-card p-4">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
@@ -215,6 +260,17 @@ export default function Dashboard() {
                 )}
               >
                 Claude 接管: {takeoverStatus?.using_local_proxy ? "已命中本地代理" : "未命中"}
+              </span>
+
+              <span
+                className={cn(
+                  "rounded-md border px-2 py-1",
+                  tokenStatus?.is_valid
+                    ? "border-green-500/30 text-green-400"
+                    : "border-yellow-500/30 text-yellow-300"
+                )}
+              >
+                GitHub 认证: {tokenStatus?.is_valid ? "已认证" : "未认证"}
               </span>
             </div>
 
@@ -279,6 +335,25 @@ export default function Dashboard() {
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                disabled={githubAuthMutation.isPending}
+                onClick={() => githubAuthMutation.mutate()}
+                className={cn(
+                  "inline-flex items-center gap-1 rounded-md border px-3 py-1.5 text-xs transition-colors disabled:opacity-50",
+                  tokenStatus?.is_valid
+                    ? "border-green-500/30 bg-green-500/10 text-green-400 hover:bg-green-500/20"
+                    : "border-border bg-secondary text-foreground hover:bg-secondary/80"
+                )}
+              >
+                <Github className="h-3.5 w-3.5" />
+                {githubAuthMutation.isPending
+                  ? "认证中..."
+                  : tokenStatus?.is_valid
+                    ? "重新认证 GitHub"
+                    : "GitHub 认证"}
+              </button>
+
               <button
                 type="button"
                 disabled={refreshTokenMutation.isPending}
