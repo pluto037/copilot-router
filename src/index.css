@@ -1,0 +1,77 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 210 20% 98%;
+    --foreground: 222 47% 11%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+    --border: 214 24% 90%;
+    --input: 214 24% 90%;
+    --ring: 214 84% 56%;
+    --primary: 214 84% 56%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 32% 96%;
+    --secondary-foreground: 222 47% 11%;
+    --muted: 210 32% 96%;
+    --muted-foreground: 215 16% 46%;
+    --accent: 214 84% 56%;
+    --accent-foreground: 210 40% 98%;
+    --radius: 0.5rem;
+  }
+
+  :root[data-theme="midnight"] {
+    --background: 228 38% 6%;
+    --foreground: 214 40% 96%;
+    --card: 229 35% 9%;
+    --card-foreground: 214 40% 96%;
+    --border: 227 22% 18%;
+    --input: 227 22% 18%;
+    --ring: 264 83% 70%;
+    --primary: 264 83% 70%;
+    --primary-foreground: 229 35% 9%;
+    --secondary: 228 24% 13%;
+    --secondary-foreground: 214 40% 96%;
+    --muted: 228 24% 13%;
+    --muted-foreground: 215 20% 70%;
+    --accent: 264 83% 70%;
+    --accent-foreground: 229 35% 9%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  /* Tauri window drag region */
+  [data-tauri-drag-region] {
+    -webkit-app-region: drag;
+    app-region: drag;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: hsl(var(--background));
+}
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground));
+}

@@ -1,0 +1,22 @@
+# Binaries
+/target
+/src-tauri/target
+
+# Node
+node_modules
+dist
+
+# Tauri
+/src-tauri/gen
+
+# Environment
+.env
+.env.local
+
+# macOS
+.DS_Store
+
+# SQLite databases
+*.db
+*.db-shm
+*.db-wal

@@ -1,0 +1,17 @@
+{
+  "$schema": "https://schema.tauri.app/config/2/capability",
+  "identifier": "default",
+  "description": "Default capabilities for Copilot Router",
+  "windows": ["main"],
+  "permissions": [
+    "core:default",
+    "core:app:default",
+    "core:window:default",
+    "core:path:default",
+    "core:event:default",
+    "shell:default",
+    "autostart:default",
+    "store:default",
+    "clipboard-manager:default"
+  ]
+}
